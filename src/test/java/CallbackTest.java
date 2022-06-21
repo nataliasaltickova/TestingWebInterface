@@ -50,5 +50,18 @@ public class CallbackTest {
         assertEquals(expected, actualText);
 
     }
+    @Test
+    public void shouldSendFormWhenInvalidName() {
+        driver.get("http://localhost:9999");
+        List<WebElement> textFields = driver.findElements(By.className("input__control"));
+        textFields.get(0).sendKeys("Natalia");
+        textFields.get(1).sendKeys("+78968584534");
+        driver.findElement(By.className("checkbox__box")).click();
+        driver.findElement(By.tagName("button")).click();
+        String actualText = driver.findElement(By.cssSelector("[class = input__sub]")).getText();
+        String expected = "Имя и Фамилия указаные неверно. Допустимы только русские буквы, пробелы и дефисы.";
+        assertEquals(expected, actualText);
+
+    }
 
 }
