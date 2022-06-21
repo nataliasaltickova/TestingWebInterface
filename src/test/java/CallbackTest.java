@@ -1,3 +1,4 @@
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -6,39 +7,48 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+
 import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.List;
+
+import org.openqa.selenium.chrome.ChromeOptions;
 
 public class CallbackTest {
     private WebDriver driver;
 
     @BeforeAll
-     public static void setUpAll() {
-        System.setProperty("webdriver.chrome.driver","C:\\Users\\79271\\Downloads\\TestingWebInterface\\driver\\win\\chromedriver.exe");
-     }
-     @BeforeEach
-     public void setUp() {
-        driver = new ChromeDriver();
-     }
-     @AfterEach
+    public static void setUpAll() {
+        WebDriverManager.chromedriver().setup();
+    }
+
+    @BeforeEach
+    public void setUp() {
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--headless");
+        driver = new ChromeDriver(options);
+    }
+
+    @AfterEach
     public void tearDown() {
         driver.quit();
         driver = null;
-     }
-     @Test
+    }
+
+    @Test
     public void shouldSendForm() {
         driver.get("http://localhost:9999");
-         List<WebElement> textFields = driver.findElements(By.className("input__control"));
-         textFields.get(0).sendKeys("Natalia");
-         textFields.get(1).sendKeys("+78968584534");
-         driver.findElement(By.className("checkbox__box")).click();
-         driver.findElement(By.tagName("button"));
-         String actualText = driver.findElement(By.className("paragraph")).getText();
-         String expected = "Ваша заявка успешно отправлена! Наш менеджер свяжется с вами в ближайшее время.";
-         assertEquals(expected,actualText);
+        List<WebElement> textFields = driver.findElements(By.className("input__control"));
+        textFields.get(0).sendKeys("Наталья");
+        textFields.get(1).sendKeys("+78968584534");
+        driver.findElement(By.className("checkbox__box")).click();
+        driver.findElement(By.tagName("button")).click();
+        String actualText = driver.findElement(By.cssSelector("[data-test-id = order-success]")).getText().trim();
+        String expected = "Ваша заявка успешно отправлена! Наш менеджер свяжется с вами в ближайшее время.";
+        assertEquals(expected, actualText);
 
-     }
-
-
+    }
 
 }
