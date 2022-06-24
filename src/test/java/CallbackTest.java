@@ -5,14 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.List;
-
 import org.openqa.selenium.chrome.ChromeOptions;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CallbackTest {
     private WebDriver driver;
@@ -29,6 +25,8 @@ public class CallbackTest {
         options.addArguments("--no-sandbox");
         options.addArguments("--headless");
         driver = new ChromeDriver(options);
+
+        driver.get("http://localhost:9999");
     }
 
     @AfterEach
@@ -39,10 +37,8 @@ public class CallbackTest {
 
     @Test
     public void shouldSendForm() {
-        driver.get("http://localhost:9999");
-        List<WebElement> textFields = driver.findElements(By.className("input__control"));
-        textFields.get(0).sendKeys("Наталья");
-        textFields.get(1).sendKeys("+78968584534");
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Иван Петров-Иванов");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79543456255");
         driver.findElement(By.className("checkbox__box")).click();
         driver.findElement(By.tagName("button")).click();
         String actualText = driver.findElement(By.cssSelector("[data-test-id = order-success]")).getText().trim();
@@ -50,16 +46,63 @@ public class CallbackTest {
         assertEquals(expected, actualText);
 
     }
+
     @Test
     public void shouldSendFormWhenInvalidName() {
-        driver.get("http://localhost:9999");
-        List<WebElement> textFields = driver.findElements(By.className("input__control"));
-        textFields.get(0).sendKeys("Natalia");
-        textFields.get(1).sendKeys("+78968584534");
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Natalia");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79543456255");
         driver.findElement(By.className("checkbox__box")).click();
         driver.findElement(By.tagName("button")).click();
-        String actualText = driver.findElement(By.cssSelector("[class = input__sub]")).getText();
+        String actualText = driver.findElement(By.cssSelector("[data-test-id='name'].input_invalid .input__sub")).getText();
         String expected = "Имя и Фамилия указаные неверно. Допустимы только русские буквы, пробелы и дефисы.";
+        assertEquals(expected, actualText);
+
+    }
+
+    @Test
+    public void shouldSendFormWhenInvalidPhone() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Наталья");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("bnnnmm");
+        driver.findElement(By.className("checkbox__box")).click();
+        driver.findElement(By.tagName("button")).click();
+        String actualText = driver.findElement(By.cssSelector("[data-test-id='phone'].input_invalid .input__sub")).getText();
+        String expected = "Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.";
+        assertEquals(expected, actualText);
+
+    }
+
+    @Test
+    public void shouldSendFormWhenNotPushCheckBox() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Наталья");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79543456255");
+        driver.findElement(By.className("checkbox__box"));
+        driver.findElement(By.tagName("button")).click();
+        String actualText = driver.findElement(By.cssSelector("[data-test-id='agreement'].input_invalid")).getText();
+        String expected = "Я соглашаюсь с условиями обработки и использования моих персональных данных и разрешаю сделать запрос в бюро кредитных историй";
+        assertEquals(expected, actualText);
+
+    }
+
+    @Test
+    public void shouldSendFormWhenEmptyFieldName() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79543456255");
+        driver.findElement(By.className("checkbox__box")).click();
+        driver.findElement(By.tagName("button")).click();
+        String actualText = driver.findElement(By.cssSelector("[data-test-id='name'].input_invalid .input__sub")).getText();
+        String expected = "Поле обязательно для заполнения";
+        assertEquals(expected, actualText);
+
+    }
+
+    @Test
+    public void shouldSendFormWhenEmptyFieldPhone() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Наталья");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("");
+        driver.findElement(By.className("checkbox__box")).click();
+        driver.findElement(By.tagName("button")).click();
+        String actualText = driver.findElement(By.cssSelector("[data-test-id='phone'].input_invalid .input__sub")).getText();
+        String expected = "Поле обязательно для заполнения";
         assertEquals(expected, actualText);
 
     }
